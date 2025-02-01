@@ -1,4 +1,4 @@
-import {createAsyncThunk, createSlice, PayloadAction} from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
 
 interface UnsplashImage {
@@ -9,12 +9,14 @@ interface UnsplashImage {
 
 interface UnsplashState {
     images: UnsplashImage[];
+    searchHistory: string[];
     loading: boolean;
     error: string | null;
 }
 
 const initialState: UnsplashState = {
     images: [],
+    searchHistory: [],
     loading: false,
     error: null,
 };
@@ -29,7 +31,7 @@ const fetchFromCache = async (url: string): Promise<string | null> => {
 
 export const fetchUnsplashImages = createAsyncThunk(
     "unsplash/fetchImages",
-    async (searchTerm: string, {rejectWithValue}) => {
+    async (searchTerm: string, { rejectWithValue }) => {
         try {
             const cache = await caches.open(CACHE_NAME);
             const cachedUrls: string[] = [];
@@ -46,7 +48,7 @@ export const fetchUnsplashImages = createAsyncThunk(
             });
 
             const imageUrls: string[] = (response.data as unknown as {
-                results: any[]
+                results: any[];
             }).results.map((img: any) => img.urls.small);
 
             await Promise.all(
@@ -60,7 +62,7 @@ export const fetchUnsplashImages = createAsyncThunk(
                 })
             );
 
-            return cachedUrls;
+            return { searchTerm, imageUrls: cachedUrls };
         } catch (error: any) {
             return rejectWithValue(error.message || "Failed to fetch images");
         }
@@ -70,7 +72,13 @@ export const fetchUnsplashImages = createAsyncThunk(
 const unsplashImagesSlice = createSlice({
     name: "unsplash",
     initialState,
-    reducers: {},
+    reducers: {
+        addToHistory: (state, action: PayloadAction<string>) => {
+            if (!state.searchHistory.includes(action.payload)) {
+                state.searchHistory.unshift(action.payload);
+            }
+        },
+    },
     extraReducers: (builder) => {
         builder
             .addCase(fetchUnsplashImages.pending, (state) => {
@@ -78,13 +86,16 @@ const unsplashImagesSlice = createSlice({
             })
             .addCase(
                 fetchUnsplashImages.fulfilled,
-                (state, action: PayloadAction<string[]>) => {
+                (state, action: PayloadAction<{ searchTerm: string; imageUrls: string[] }>) => {
                     state.loading = false;
-                    state.images = action.payload.map((url) => ({
+                    state.images = action.payload.imageUrls.map((url) => ({
                         id: url,
-                        urls: {small: url},
+                        urls: { small: url },
                         alt_description: "Unsplash Image",
                     }));
+                    if (!state.searchHistory.includes(action.payload.searchTerm)) {
+                        state.searchHistory.unshift(action.payload.searchTerm);
+                    }
                 }
             )
             .addCase(fetchUnsplashImages.rejected, (state, action) => {
