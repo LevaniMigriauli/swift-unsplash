@@ -11,12 +11,11 @@ const Home = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const lastChange = useRef<number | null>(null);
-    const [searchTerm, setSearchTerm] = useState<string>("");
+    const [searchTerm, setSearchTerm] = useState<string | null>(null);
+
     const {images, loading, error} = useAppSelector((state) => state.unsplash);
 
     useEffect(() => {
-        if (!searchTerm) return;
-
         dispatch(fetchUnsplashImages(searchTerm));
     }, [searchTerm, dispatch]);
 
