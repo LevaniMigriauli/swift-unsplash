@@ -12,6 +12,8 @@ interface UnsplashState {
     searchHistory: string[];
     loading: boolean;
     error: string | null;
+    page: number;
+    searchTerm: string | null;
 }
 
 const initialState: UnsplashState = {
@@ -19,29 +21,22 @@ const initialState: UnsplashState = {
     searchHistory: [],
     loading: false,
     error: null,
+    page: 1,
+    searchTerm: null,
 };
-
-// const CACHE_NAME = "image-cache";
-
-// const fetchFromCache = async (url: string): Promise<string | null> => {
-//     const cache = await caches.open(CACHE_NAME);
-//     const cachedResponse = await cache.match(url);
-//     return cachedResponse ? url : null;
-// };
 
 export const fetchUnsplashImages = createAsyncThunk(
     "unsplash/fetchImages",
-    async (searchTerm: string | null, {rejectWithValue}) => {
+    async ({searchTerm, page}: { searchTerm: string | null; page: number }, {rejectWithValue}) => {
         try {
-            const isSearching = searchTerm ? searchTerm : false; // True if searchTerm exists
-            console.log(isSearching)
+            const isSearching = Boolean(searchTerm);
             const url = isSearching
                 ? "https://api.unsplash.com/search/photos"
                 : "https://api.unsplash.com/photos";
 
             const params = isSearching
-                ? {query: searchTerm, per_page: 20, order_by: "popular"}
-                : {per_page: 20, order_by: "popular"};
+                ? {query: searchTerm, per_page: 20, page, order_by: "popular"}
+                : {per_page: 20, page, order_by: "popular"};
 
             const response = await axios.get(url, {
                 params,
@@ -62,7 +57,7 @@ export const fetchUnsplashImages = createAsyncThunk(
                     alt_description: img.alt_description || "Unsplash Image",
                 }));
 
-            return {searchTerm, imageUrls};
+            return {searchTerm, page, imageUrls};
         } catch (error: any) {
             return rejectWithValue(error.message || "Failed to fetch images");
         }
@@ -73,11 +68,13 @@ const unsplashImagesSlice = createSlice({
     name: "unsplash",
     initialState,
     reducers: {
-        // addToHistory: (state, action: PayloadAction<string>) => {
-        //     if (!state.searchHistory.includes(action.payload)) {
-        //         state.searchHistory.unshift(action.payload);
-        //     }
-        // },
+        resetImages: (state) => {
+            state.images = [];
+            state.page = 1;
+            state.error = null;
+            state.loading = false;
+            state.searchTerm = null;
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -86,9 +83,21 @@ const unsplashImagesSlice = createSlice({
             })
             .addCase(
                 fetchUnsplashImages.fulfilled,
-                (state, action: PayloadAction<{ searchTerm: string | null; imageUrls: UnsplashImage[] }>) => {
+                (state, action: PayloadAction<{
+                    searchTerm: string | null;
+                    page: number;
+                    imageUrls: UnsplashImage[]
+                }>) => {
                     state.loading = false;
-                    state.images = action.payload.imageUrls;
+
+                    if (action.payload.page === 1) {
+                        state.images = action.payload.imageUrls;
+                    } else {
+                        state.images = [...state.images, ...action.payload.imageUrls];
+                    }
+
+                    state.page = action.payload.page + 1;
+                    state.searchTerm = action.payload.searchTerm;
 
                     if (action.payload.searchTerm && !state.searchHistory.includes(action.payload.searchTerm)) {
                         state.searchHistory.unshift(action.payload.searchTerm);
@@ -102,5 +111,5 @@ const unsplashImagesSlice = createSlice({
     },
 });
 
-// export const {addToHistory} = unsplashImagesSlice.actions;
+export const {resetImages} = unsplashImagesSlice.actions;
 export default unsplashImagesSlice.reducer;

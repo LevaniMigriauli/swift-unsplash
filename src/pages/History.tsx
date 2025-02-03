@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { AppDispatch, RootState } from "../redux/store.ts";
-import { fetchUnsplashImages } from "../redux/slice/unsplashImagesSlice.ts";
+import {useState} from "react";
+import {useSelector, useDispatch} from "react-redux";
+import {AppDispatch, RootState} from "../redux/store.ts";
+import {fetchUnsplashImages, resetImages} from "../redux/slice/unsplashImagesSlice.ts";
+import useInfiniteScroll from "../hooks/useInfiniteScroll.ts";
 
 const useAppDispatch: () => AppDispatch = useDispatch;
 const useAppSelector: <T>(selector: (state: RootState) => T) => T = useSelector;
@@ -9,14 +10,25 @@ const useAppSelector: <T>(selector: (state: RootState) => T) => T = useSelector;
 const History = () => {
     const dispatch = useAppDispatch();
     const searchHistory = useAppSelector((state) => state.unsplash.searchHistory);
-    const { images, loading, error } = useAppSelector((state) => state.unsplash);
+    const {images, loading, error, page, searchTerm} = useAppSelector((state) => state.unsplash);
 
-    const [selectedQuery, setSelectedQuery] = useState<string>("");
+    const [selectedQuery, setSelectedQuery] = useState<string | null>(null);
 
     const handleHistoryClick = (query: string) => {
+        if (query === selectedQuery) return;
         setSelectedQuery(query);
-        dispatch(fetchUnsplashImages(query));
+        dispatch(resetImages());
+        dispatch(fetchUnsplashImages({searchTerm: query, page: 1}));
     };
+
+    const {lastElementCallBack} = useInfiniteScroll({
+        loading,
+        fetchMore: () => {
+            if (!loading && selectedQuery) {
+                dispatch(fetchUnsplashImages({searchTerm: selectedQuery, page}));
+            }
+        },
+    });
 
     return (
         <>
@@ -39,18 +51,25 @@ const History = () => {
             {selectedQuery && (
                 <>
                     <h2>Showing results for: {selectedQuery}</h2>
-                    {loading && <p>Loading images...</p>}
+                    {loading && page === 1 && <p>Loading images...</p>}
                     {error && <p>Error: {error}</p>}
 
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px" }}>
+                    <div style={{display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px"}}>
                         {images.length > 0 ? (
-                            images.map((image) => (
-                                <img key={image.id} src={image.urls.small} alt={image.alt_description} />
+                            images.map((image, index) => (
+                                <img
+                                    key={image.id}
+                                    src={image.urls.small}
+                                    alt={image.alt_description}
+                                    ref={index === images.length - 1 ? lastElementCallBack : null}
+                                />
                             ))
                         ) : (
                             !loading && <p>No images found</p>
                         )}
                     </div>
+
+                    {loading && page > 1 && <p>Loading more images...</p>}
                 </>
             )}
         </>

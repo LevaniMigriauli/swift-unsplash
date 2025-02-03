@@ -1,8 +1,9 @@
 import {useEffect, useRef, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {AppDispatch, RootState} from "../redux/store.ts";
-import {fetchUnsplashImages} from "../redux/slice/unsplashImagesSlice.ts";
+import {fetchUnsplashImages, resetImages} from "../redux/slice/unsplashImagesSlice.ts";
 import {useNavigate} from "react-router-dom";
+import useInfiniteScroll from "../hooks/useInfiniteScroll.ts";
 
 const useAppDispatch: () => AppDispatch = useDispatch;
 const useAppSelector: <T>(selector: (state: RootState) => T) => T = useSelector;
@@ -13,17 +14,28 @@ const Home = () => {
     const lastChange = useRef<number | null>(null);
     const [searchTerm, setSearchTerm] = useState<string | null>(null);
 
-    const {images, loading, error} = useAppSelector((state) => state.unsplash);
+    const {images, loading, error, page} = useAppSelector((state) => state.unsplash);
 
     useEffect(() => {
-        dispatch(fetchUnsplashImages(searchTerm));
-    }, [searchTerm, dispatch]);
+        if (images.length === 0) {
+            dispatch(fetchUnsplashImages({searchTerm: null, page: 1}));
+        }
+    }, [dispatch, images.length]);
+
+    const {lastElementCallBack} = useInfiniteScroll({
+        loading,
+        fetchMore: () => {
+            if (!loading) dispatch(fetchUnsplashImages({searchTerm, page}));
+        },
+    });
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (lastChange.current) clearTimeout(lastChange.current);
 
         lastChange.current = setTimeout(() => {
             setSearchTerm(e.target.value);
+            dispatch(resetImages());
+            dispatch(fetchUnsplashImages({searchTerm: e.target.value, page: 1}));
         }, 800);
     };
 
@@ -35,20 +47,27 @@ const Home = () => {
                 <button onClick={() => navigate("/history")}>View History</button>
             </header>
 
-            {loading && <p>Loading images...</p>}
+            {loading && page === 1 && <p>Loading images...</p>}
             {error && <p>Error: {error}</p>}
 
-            <div>
+            <div className="images-container">
                 <div style={{display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px"}}>
                     {images.length > 0 ? (
-                        images.map((image) => (
-                            <img key={image.id} src={image.urls.small} alt={image.alt_description}/>
+                        images.map((image, index) => (
+                            <img
+                                key={image.id}
+                                src={image.urls.small}
+                                alt={image.alt_description}
+                                ref={index === images.length - 1 ? lastElementCallBack : null}
+                            />
                         ))
                     ) : (
                         !loading && <p>No images found</p>
                     )}
                 </div>
             </div>
+
+            {loading && page > 1 && <p>Loading more images...</p>}
         </>
     );
 };
