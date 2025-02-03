@@ -7,6 +7,10 @@ interface UnsplashImage {
     alt_description: string;
 }
 
+interface UnsplashApiResponse {
+    results: UnsplashImage[]
+}
+
 interface UnsplashState {
     images: UnsplashImage[];
     searchHistory: string[];
@@ -44,18 +48,8 @@ export const fetchUnsplashImages = createAsyncThunk(
             });
 
             const imageUrls: UnsplashImage[] = isSearching
-                ? (response.data as unknown as {
-                    results: any[];
-                }).results.map((img: any) => ({
-                    id: img.id,
-                    urls: {small: img.urls.small},
-                    alt_description: img.alt_description || "Unsplash Image",
-                }))
-                : response.data.map((img: any) => ({
-                    id: img.id,
-                    urls: {small: img.urls.small},
-                    alt_description: img.alt_description || "Unsplash Image",
-                }));
+                ? (response.data as UnsplashApiResponse).results
+                : (response.data as UnsplashImage[])
 
             return {searchTerm, page, imageUrls};
         } catch (error: any) {
