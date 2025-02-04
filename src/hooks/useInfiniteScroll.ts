@@ -1,4 +1,6 @@
 import {useCallback, useRef} from "react";
+import {useSelector} from "react-redux";
+import {RootState} from "../redux/store.ts";
 
 interface UseInfiniteScrollProps {
     loading: boolean;
@@ -8,10 +10,11 @@ interface UseInfiniteScrollProps {
 const useInfiniteScroll = ({loading, fetchMore}: UseInfiniteScrollProps) => {
     const observer = useRef<IntersectionObserver | null>(null);
     const lastElementRef = useRef<HTMLImageElement | null>(null);
+    const hasError = useSelector((state: RootState) => state.unsplash.hasError);
 
     const lastElementCallBack = useCallback(
         (node: HTMLImageElement | null) => {
-            if (loading) return;
+            if (loading || hasError) return;
 
             if (observer.current) observer.current.disconnect();
 
@@ -25,10 +28,9 @@ const useInfiniteScroll = ({loading, fetchMore}: UseInfiniteScrollProps) => {
                 });
             }, {root: null, threshold: 0.1});
 
-
             if (node) observer.current.observe(node);
         },
-        [loading, fetchMore]
+        [loading, fetchMore, hasError]
     );
 
     return {lastElementRef, lastElementCallBack};

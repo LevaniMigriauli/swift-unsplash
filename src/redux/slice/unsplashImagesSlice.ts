@@ -19,6 +19,7 @@ interface UnsplashState {
     error: string | null;
     page: number;
     searchTerm: string | null;
+    hasError: boolean;
 }
 
 const initialState: UnsplashState = {
@@ -28,7 +29,8 @@ const initialState: UnsplashState = {
     error: null,
     page: 1,
     searchTerm: null,
-};
+    hasError: false,
+}
 
 const CACHE_NAME = "unsplash-cache";
 
@@ -67,7 +69,11 @@ export const fetchUnsplashImages = createAsyncThunk(
 
             return {searchTerm, page, imageUrls};
         } catch (error: any) {
-            return rejectWithValue(error.message || "Failed to fetch images");
+            if (error.response?.status === 403) {
+                return rejectWithValue({message: "API Limit Reached", code: 403});
+            }
+
+            return rejectWithValue({message: error.message || "Failed to fetch images", code: error.response?.status});
         }
     }
 );
@@ -77,17 +83,18 @@ const unsplashImagesSlice = createSlice({
     initialState,
     reducers: {
         resetImages: (state) => {
-            console.log('reset is triggered')
             state.images = [];
             state.page = 1;
             state.error = null;
             state.loading = false;
             state.searchTerm = null;
+            state.hasError = false;
         },
     },
     extraReducers: (builder) => {
         builder
             .addCase(fetchUnsplashImages.pending, (state) => {
+                if (state.hasError) return;
                 state.loading = true;
             })
             .addCase(
@@ -95,9 +102,10 @@ const unsplashImagesSlice = createSlice({
                 (state, action: PayloadAction<{
                     searchTerm: string | null;
                     page: number;
-                    imageUrls: UnsplashImage[];
+                    imageUrls: UnsplashImage[]
                 }>) => {
                     state.loading = false;
+                    state.hasError = false;
 
                     if (action.payload.page === 1) {
                         state.images = action.payload.imageUrls;
@@ -110,13 +118,24 @@ const unsplashImagesSlice = createSlice({
 
                     if (action.payload.searchTerm && !state.searchHistory.includes(action.payload.searchTerm)) {
                         state.searchHistory.unshift(action.payload.searchTerm);
-                        localStorage.setItem('searchHistory', JSON.stringify(state.searchHistory));
+                        localStorage.setItem("searchHistory", JSON.stringify(state.searchHistory));
                     }
                 }
             )
-            .addCase(fetchUnsplashImages.rejected, (state, action) => {
+            .addCase(fetchUnsplashImages.rejected, (state, action: PayloadAction<{
+                message: string;
+                code?: number
+            } | undefined>) => {
                 state.loading = false;
-                state.error = action.payload as string;
+
+                if (action.payload) {
+                    state.error = action.payload.message;
+                    if (action.payload.code === 403) {
+                        state.hasError = true;
+                    }
+                } else {
+                    state.error = "An unknown error occurred.";
+                }
             });
     },
 });

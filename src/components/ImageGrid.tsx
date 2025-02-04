@@ -1,4 +1,6 @@
 import {useRef, useState} from "react";
+import {useSelector} from "react-redux";
+import {RootState} from "../redux/store";
 import "./ImageGrid.css";
 import CustomModal, {CustomModalRef} from "./Modal.tsx";
 import {UnsplashImage} from "../redux/slice/unsplashImagesSlice.ts";
@@ -12,6 +14,7 @@ interface ImageGridProps {
 const ImageGrid = ({images, loading, lastElementCallback}: ImageGridProps) => {
     const modalRef = useRef<CustomModalRef>(null);
     const [selectedImage, setSelectedImage] = useState<{ src: string; alt: string; likes: number } | null>(null);
+    const hasError = useSelector((state: RootState) => state.unsplash.hasError);
 
     const handleImageClick = (src: string, likes: number, alt: string) => {
         setSelectedImage({src, likes, alt});
@@ -26,7 +29,7 @@ const ImageGrid = ({images, loading, lastElementCallback}: ImageGridProps) => {
                         <img
                             src={image.urls.small}
                             alt={image.alt_description}
-                            ref={index === images.length - 1 ? lastElementCallback || null : null}
+                            ref={index === images.length - 1 && !hasError ? lastElementCallback || null : null}
                             onClick={() => handleImageClick(image.urls.full, image.user.total_likes, image.alt_description)}
                             style={{cursor: "pointer"}}
                         />
@@ -35,6 +38,8 @@ const ImageGrid = ({images, loading, lastElementCallback}: ImageGridProps) => {
             ) : (
                 !loading && <p>No images found</p>
             )}
+
+            {hasError && <p style={{fontSize: '22px', color: 'red'}}>Error: API Limit Reached</p>}
 
             <CustomModal ref={modalRef} handleModalClose={() => setSelectedImage(null)} width="50%">
                 <div style={{maxHeight: "90vh"}}>
