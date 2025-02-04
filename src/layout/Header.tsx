@@ -15,9 +15,9 @@ const Header = ({headingTitle, hasSearchInput, onSearch}: HeaderProps) => {
             <h1>{headingTitle}</h1>
             {hasSearchInput && <input className={'header__input'} placeholder="ძებნა..." onChange={onSearch}/>}
             <ul className={'header__nav'}>
-                <li className={location.pathname === '/' ? 'active' : ''}><Link to={'/'}>Home</Link></li>
-                <li className={location.pathname === '/history' ? 'active' : ''}>
-                    <Link to={'/history'}>History</Link>
+                <li className={location.pathname === '/swift-unsplash/' ? 'active' : ''}><Link to={'/swift-unsplash/'}>Home</Link></li>
+                <li className={location.pathname === '/swift-unsplash/history' ? 'active' : ''}>
+                    <Link to={'/swift-unsplash/history'}>History</Link>
                 </li>
             </ul>
         </header>

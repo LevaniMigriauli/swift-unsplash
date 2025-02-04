@@ -9,8 +9,8 @@ function App() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path={'/'} element={<Home/>}/>
-                <Route path={'/history'} element={<History/>}/>
+                <Route path={'/swift-unsplash/'} element={<Home/>}/>
+                <Route path={'/swift-unsplash/history'} element={<History/>}/>
             </Routes>
         </BrowserRouter>
     )
