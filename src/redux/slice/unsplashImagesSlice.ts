@@ -8,7 +8,7 @@ interface UnsplashImage {
 }
 
 interface UnsplashApiResponse {
-    results: UnsplashImage[]
+    results: UnsplashImage[];
 }
 
 interface UnsplashState {
@@ -29,6 +29,8 @@ const initialState: UnsplashState = {
     searchTerm: null,
 };
 
+const CACHE_NAME = "unsplash-cache";
+
 export const fetchUnsplashImages = createAsyncThunk(
     "unsplash/fetchImages",
     async ({searchTerm, page}: { searchTerm: string | null; page: number }, {rejectWithValue}) => {
@@ -42,6 +44,15 @@ export const fetchUnsplashImages = createAsyncThunk(
                 ? {query: searchTerm, per_page: 20, page, order_by: "popular"}
                 : {per_page: 20, page, order_by: "popular"};
 
+            const cacheKey = `${url}?${new URLSearchParams(params as any).toString()}`;
+            const cache = await caches.open(CACHE_NAME);
+            const cachedResponse = await cache.match(cacheKey);
+
+            if (cachedResponse) {
+                const cachedData = await cachedResponse.json();
+                return {searchTerm, page, imageUrls: cachedData};
+            }
+
             const response = await axios.get(url, {
                 params,
                 headers: {Authorization: `Client-ID CUv9IfUKBwAScwKFmfb-QJMFeXNvHUMeJkuTUWAsxd8`},
@@ -49,7 +60,9 @@ export const fetchUnsplashImages = createAsyncThunk(
 
             const imageUrls: UnsplashImage[] = isSearching
                 ? (response.data as UnsplashApiResponse).results
-                : (response.data as UnsplashImage[])
+                : (response.data as UnsplashImage[]);
+
+            cache.put(cacheKey, new Response(JSON.stringify(imageUrls)));
 
             return {searchTerm, page, imageUrls};
         } catch (error: any) {
@@ -80,7 +93,7 @@ const unsplashImagesSlice = createSlice({
                 (state, action: PayloadAction<{
                     searchTerm: string | null;
                     page: number;
-                    imageUrls: UnsplashImage[]
+                    imageUrls: UnsplashImage[];
                 }>) => {
                     state.loading = false;
 
@@ -95,7 +108,7 @@ const unsplashImagesSlice = createSlice({
 
                     if (action.payload.searchTerm && !state.searchHistory.includes(action.payload.searchTerm)) {
                         state.searchHistory.unshift(action.payload.searchTerm);
-                        localStorage.setItem('searchHistory', JSON.stringify(state.searchHistory))
+                        localStorage.setItem('searchHistory', JSON.stringify(state.searchHistory));
                     }
                 }
             )

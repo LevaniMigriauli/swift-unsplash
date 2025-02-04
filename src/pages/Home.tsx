@@ -16,10 +16,8 @@ const Home = () => {
     const {images, loading, error, page} = useAppSelector((state) => state.unsplash);
 
     useEffect(() => {
-        if (images.length === 0) {
             dispatch(fetchUnsplashImages({searchTerm: null, page: 1}));
-        }
-    }, [dispatch, images.length]);
+    }, []);
 
     const {lastElementCallBack} = useInfiniteScroll({
         loading,
