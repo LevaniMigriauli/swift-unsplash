@@ -19,7 +19,7 @@ export interface CustomModalRef {
 }
 
 const CustomModal = forwardRef<CustomModalRef, CustomModalProps>(
-    ({ isOpen = false, children, padding, borderRadius, width, handleModalClose }, ref) => {
+    ({ isOpen = false, children, padding, width, handleModalClose }, ref) => {
         const [modalIsOpen, setModalIsOpen] = useState<boolean>(isOpen);
 
         useImperativeHandle(ref, () => ({
@@ -44,7 +44,7 @@ const CustomModal = forwardRef<CustomModalRef, CustomModalProps>(
                 contentLabel="Example Modal"
                 style={{
                     overlay: {
-                        backgroundColor: "rgba(2, 21, 38, 0.34)",
+                        backgroundColor: "rgba(2, 21, 38, 0.7)",
                     },
                     content: {
                         top: "50%",
@@ -53,8 +53,11 @@ const CustomModal = forwardRef<CustomModalRef, CustomModalProps>(
                         bottom: "auto",
                         transform: "translate(-50%, -50%)",
                         padding: padding,
-                        borderRadius: borderRadius,
+                        border: 'none',
+                        borderRadius: '4px',
                         width: width,
+                        maxWidth: '800px',
+                        maxHeight: '90vh'
                     },
                 }}
             >

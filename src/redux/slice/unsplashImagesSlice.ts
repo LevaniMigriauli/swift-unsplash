@@ -1,10 +1,11 @@
 import {createAsyncThunk, createSlice, PayloadAction} from "@reduxjs/toolkit";
 import axios from "axios";
 
-interface UnsplashImage {
+export interface UnsplashImage {
     id: string;
-    urls: { small: string };
+    urls: { small: string, full: string };
     alt_description: string;
+    user: { total_likes: number }
 }
 
 interface UnsplashApiResponse {
