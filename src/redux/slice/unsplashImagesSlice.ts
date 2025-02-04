@@ -32,6 +32,11 @@ const initialState: UnsplashState = {
     hasError: false,
 }
 
+interface FetchUnsplashImagesError {
+    message: string;
+    code?: number;
+}
+
 const CACHE_NAME = "unsplash-cache";
 
 export const fetchUnsplashImages = createAsyncThunk(
@@ -122,19 +127,20 @@ const unsplashImagesSlice = createSlice({
                     }
                 }
             )
-            .addCase(fetchUnsplashImages.rejected, (state, action: PayloadAction<{
-                message: string;
-                code?: number
-            } | undefined>) => {
-                state.loading = false;
+            .addCase(fetchUnsplashImages.rejected, (state, action) => {
+                if (fetchUnsplashImages.rejected.match(action)) {
+                    state.loading = false;
 
-                if (action.payload) {
-                    state.error = action.payload.message;
-                    if (action.payload.code === 403) {
-                        state.hasError = true;
+                    const errorPayload = action.payload as FetchUnsplashImagesError | undefined;
+
+                    if (errorPayload) {
+                        state.error = errorPayload.message;
+                        if (errorPayload.code === 403) {
+                            state.hasError = true;
+                        }
+                    } else {
+                        state.error = "An unknown error occurred.";
                     }
-                } else {
-                    state.error = "An unknown error occurred.";
                 }
             });
     },
