@@ -40,7 +40,7 @@ const Home = () => {
 
     return (
         <>
-            <Header headingTitle={'Unsplash Images'} onSearch={handleSearch}/>
+            <Header headingTitle={'Unsplash Images'} hasSearchInput onSearch={handleSearch}/>
 
             {loading && page === 1 && <p>Loading images...</p>}
             {error && <p>Error: {error}</p>}
@@ -50,6 +50,7 @@ const Home = () => {
                     {images.length > 0 ? (
                         images.map((image, index) => (
                             <img
+                                style={{maxWidth: '320px', width: '100%'}}
                                 key={image.id}
                                 src={image.urls.small}
                                 alt={image.alt_description}
