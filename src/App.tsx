@@ -9,8 +9,8 @@ function App() {
     return (
         <HashRouter>
             <Routes>
-                <Route path={'/swift-unsplash/'} element={<Home/>}/>
-                <Route path={'/swift-unsplash/history'} element={<History/>}/>
+                <Route path={'/'} element={<Home/>}/>
+                <Route path={'/history'} element={<History/>}/>
             </Routes>
         </HashRouter>
     )
