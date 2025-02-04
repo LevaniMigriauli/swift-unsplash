@@ -12,16 +12,14 @@ const Header = ({headingTitle, hasSearchInput, onSearch}: HeaderProps) => {
 
     return (
         <header className={'header'}>
-            <div className={'header__layout'}>
-                <h1>{headingTitle}</h1>
-                <ul className={'header__nav'}>
-                    <li className={location.pathname === '/' ? 'active' : ''}><Link to={'/'}>Home</Link></li>
-                    <li className={location.pathname === '/history' ? 'active' : ''}>
-                        <Link to={'/history'}>History</Link>
-                    </li>
-                </ul>
-            </div>
+            <h1>{headingTitle}</h1>
             {hasSearchInput && <input className={'header__input'} placeholder="ძებნა..." onChange={onSearch}/>}
+            <ul className={'header__nav'}>
+                <li className={location.pathname === '/' ? 'active' : ''}><Link to={'/'}>Home</Link></li>
+                <li className={location.pathname === '/history' ? 'active' : ''}>
+                    <Link to={'/history'}>History</Link>
+                </li>
+            </ul>
         </header>
     )
 }

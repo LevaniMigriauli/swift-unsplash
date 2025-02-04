@@ -1,0 +1,9 @@
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.image-grid__item {
+    max-width: 320px;
+}

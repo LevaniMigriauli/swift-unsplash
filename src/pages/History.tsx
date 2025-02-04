@@ -3,7 +3,9 @@ import {useSelector, useDispatch} from "react-redux";
 import {AppDispatch, RootState} from "../redux/store.ts";
 import {fetchUnsplashImages, resetImages} from "../redux/slice/unsplashImagesSlice.ts";
 import useInfiniteScroll from "../hooks/useInfiniteScroll.ts";
+import "./history.css"
 import Header from "../layout/Header.tsx";
+import ImageGrid from "../components/ImageGrid.tsx";
 
 const useAppDispatch: () => AppDispatch = useDispatch;
 const useAppSelector: <T>(selector: (state: RootState) => T) => T = useSelector;
@@ -35,10 +37,10 @@ const History = () => {
         <>
             <Header headingTitle={'Search History'}/>
 
-            <ul>
+            <ul className={'history'}>
                 {searchHistory.length > 0 ? (
                     searchHistory.map((query, index) => (
-                        <li key={index}>
+                        <li className={'history__item'} key={index}>
                             <button onClick={() => handleHistoryClick(query)}>{query}</button>
                         </li>
                     ))
@@ -53,20 +55,7 @@ const History = () => {
                     {loading && page === 1 && <p>Loading images...</p>}
                     {error && <p>Error: {error}</p>}
 
-                    <div style={{display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px"}}>
-                        {images.length > 0 ? (
-                            images.map((image, index) => (
-                                <img
-                                    key={image.id}
-                                    src={image.urls.small}
-                                    alt={image.alt_description}
-                                    ref={index === images.length - 1 ? lastElementCallBack : null}
-                                />
-                            ))
-                        ) : (
-                            !loading && <p>No images found</p>
-                        )}
-                    </div>
+                    <ImageGrid images={images} loading={loading} lastElementCallback={lastElementCallBack}/>;
 
                     {loading && page > 1 && <p>Loading more images...</p>}
                 </>

@@ -1,0 +1,16 @@
+.history{
+display: flex;
+    gap: 14px;
+}
+
+.history .history__item {
+    list-style: none;
+}
+
+.history .history__item button {
+    font-size: 18px;
+    cursor: pointer;
+    border: none;
+    padding: 4px 16px;
+    border-radius: 6px;
+}
