@@ -11,13 +11,13 @@ const ImageGrid = ({images, loading, lastElementCallback}: ImageGridProps) => {
         <div className="image-grid">
             {images.length > 0 ? (
                 images.map((image, index) => (
+                    <div key={`${image.id}-${index}`} className="image-grid__item">
                     <img
-                        className="image-grid__item"
-                        key={image.id}
-                        src={image.urls.small}
-                        alt={image.alt_description}
-                        ref={index === images.length - 1 ? lastElementCallback || null : null}
-                    />
+                            src={image.urls.small}
+                            alt={image.alt_description}
+                            ref={index === images.length - 1 ? lastElementCallback || null : null}
+                        />
+                    </div>
                 ))
             ) : (
                 !loading && <p>No images found</p>

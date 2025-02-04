@@ -3,7 +3,7 @@ import {useSelector, useDispatch} from "react-redux";
 import {AppDispatch, RootState} from "../redux/store.ts";
 import {fetchUnsplashImages, resetImages} from "../redux/slice/unsplashImagesSlice.ts";
 import useInfiniteScroll from "../hooks/useInfiniteScroll.ts";
-import "./history.css"
+import "./History.css"
 import Header from "../layout/Header.tsx";
 import ImageGrid from "../components/ImageGrid.tsx";
 

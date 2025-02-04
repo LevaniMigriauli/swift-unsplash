@@ -13,7 +13,6 @@ const Home = () => {
     const dispatch = useAppDispatch();
     const lastChange = useRef<number | null>(null);
     const [searchTerm, setSearchTerm] = useState<string | null>(null);
-
     const {images, loading, error, page} = useAppSelector((state) => state.unsplash);
 
     useEffect(() => {
