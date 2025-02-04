@@ -77,6 +77,7 @@ const unsplashImagesSlice = createSlice({
     initialState,
     reducers: {
         resetImages: (state) => {
+            console.log('reset is triggered')
             state.images = [];
             state.page = 1;
             state.error = null;
