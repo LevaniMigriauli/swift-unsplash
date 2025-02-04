@@ -22,7 +22,7 @@ interface UnsplashState {
 
 const initialState: UnsplashState = {
     images: [],
-    searchHistory: [],
+    searchHistory: JSON.parse(localStorage.getItem('searchHistory') || '[]'),
     loading: false,
     error: null,
     page: 1,
@@ -44,7 +44,7 @@ export const fetchUnsplashImages = createAsyncThunk(
 
             const response = await axios.get(url, {
                 params,
-                headers: {Authorization: `Client-ID ${import.meta.env.VITE_UNSPLASH_ACCESS_KEY}`},
+                headers: {Authorization: `Client-ID CUv9IfUKBwAScwKFmfb-QJMFeXNvHUMeJkuTUWAsxd8`},
             });
 
             const imageUrls: UnsplashImage[] = isSearching
@@ -95,6 +95,7 @@ const unsplashImagesSlice = createSlice({
 
                     if (action.payload.searchTerm && !state.searchHistory.includes(action.payload.searchTerm)) {
                         state.searchHistory.unshift(action.payload.searchTerm);
+                        localStorage.setItem('searchHistory', JSON.stringify(state.searchHistory))
                     }
                 }
             )
