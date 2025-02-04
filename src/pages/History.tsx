@@ -3,6 +3,7 @@ import {useSelector, useDispatch} from "react-redux";
 import {AppDispatch, RootState} from "../redux/store.ts";
 import {fetchUnsplashImages, resetImages} from "../redux/slice/unsplashImagesSlice.ts";
 import useInfiniteScroll from "../hooks/useInfiniteScroll.ts";
+import Header from "../layout/Header.tsx";
 
 const useAppDispatch: () => AppDispatch = useDispatch;
 const useAppSelector: <T>(selector: (state: RootState) => T) => T = useSelector;
@@ -32,9 +33,7 @@ const History = () => {
 
     return (
         <>
-            <header>
-                <h1>Search History</h1>
-            </header>
+            <Header headingTitle={'Search History'}/>
 
             <ul>
                 {searchHistory.length > 0 ? (

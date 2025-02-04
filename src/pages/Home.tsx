@@ -2,15 +2,14 @@ import {useEffect, useRef, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {AppDispatch, RootState} from "../redux/store.ts";
 import {fetchUnsplashImages, resetImages} from "../redux/slice/unsplashImagesSlice.ts";
-import {useNavigate} from "react-router-dom";
 import useInfiniteScroll from "../hooks/useInfiniteScroll.ts";
+import Header from "../layout/Header.tsx";
 
 const useAppDispatch: () => AppDispatch = useDispatch;
 const useAppSelector: <T>(selector: (state: RootState) => T) => T = useSelector;
 
 const Home = () => {
     const dispatch = useAppDispatch();
-    const navigate = useNavigate();
     const lastChange = useRef<number | null>(null);
     const [searchTerm, setSearchTerm] = useState<string | null>(null);
 
@@ -41,11 +40,7 @@ const Home = () => {
 
     return (
         <>
-            <header>
-                <h1>Unsplash Images</h1>
-                <input placeholder="ძებნა..." onChange={handleSearch}/>
-                <button onClick={() => navigate("/history")}>View History</button>
-            </header>
+            <Header headingTitle={'Unsplash Images'} onSearch={handleSearch}/>
 
             {loading && page === 1 && <p>Loading images...</p>}
             {error && <p>Error: {error}</p>}
