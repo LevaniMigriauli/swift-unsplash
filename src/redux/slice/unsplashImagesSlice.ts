@@ -20,17 +20,19 @@ interface UnsplashState {
     page: number;
     searchTerm: string | null;
     hasError: boolean;
+    hasMore: boolean;
 }
 
 const initialState: UnsplashState = {
     images: [],
-    searchHistory: JSON.parse(localStorage.getItem('searchHistory') || '[]'),
+    searchHistory: JSON.parse(localStorage.getItem("searchHistory") || "[]"),
     loading: false,
     error: null,
     page: 1,
     searchTerm: null,
     hasError: false,
-}
+    hasMore: true,
+};
 
 interface FetchUnsplashImagesError {
     message: string;
@@ -58,7 +60,7 @@ export const fetchUnsplashImages = createAsyncThunk(
 
             if (cachedResponse) {
                 const cachedData = await cachedResponse.json();
-                return {searchTerm, page, imageUrls: cachedData};
+                return {searchTerm, page, imageUrls: cachedData, hasMore: cachedData.length > 0};
             }
 
             const response = await axios.get(url, {
@@ -72,7 +74,9 @@ export const fetchUnsplashImages = createAsyncThunk(
 
             cache.put(cacheKey, new Response(JSON.stringify(imageUrls)));
 
-            return {searchTerm, page, imageUrls};
+            const hasMore = imageUrls.length > 0;
+
+            return {searchTerm, page, imageUrls, hasMore};
         } catch (error: any) {
             if (error.response?.status === 403) {
                 return rejectWithValue({message: "API Limit Reached", code: 403});
@@ -107,7 +111,8 @@ const unsplashImagesSlice = createSlice({
                 (state, action: PayloadAction<{
                     searchTerm: string | null;
                     page: number;
-                    imageUrls: UnsplashImage[]
+                    imageUrls: UnsplashImage[];
+                    hasMore: boolean
                 }>) => {
                     state.loading = false;
                     state.hasError = false;
@@ -120,6 +125,7 @@ const unsplashImagesSlice = createSlice({
 
                     state.page = action.payload.page + 1;
                     state.searchTerm = action.payload.searchTerm;
+                    state.hasMore = action.payload.hasMore;
 
                     if (action.payload.searchTerm && !state.searchHistory.includes(action.payload.searchTerm)) {
                         state.searchHistory.unshift(action.payload.searchTerm);

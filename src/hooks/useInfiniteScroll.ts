@@ -11,10 +11,11 @@ const useInfiniteScroll = ({loading, fetchMore}: UseInfiniteScrollProps) => {
     const observer = useRef<IntersectionObserver | null>(null);
     const lastElementRef = useRef<HTMLImageElement | null>(null);
     const hasError = useSelector((state: RootState) => state.unsplash.hasError);
+    const hasMore = useSelector((state: RootState) => state.unsplash.hasMore);
 
     const lastElementCallBack = useCallback(
         (node: HTMLImageElement | null) => {
-            if (loading || hasError) return;
+            if (loading || hasError || !hasMore) return;
 
             if (observer.current) observer.current.disconnect();
 
@@ -30,7 +31,7 @@ const useInfiniteScroll = ({loading, fetchMore}: UseInfiniteScrollProps) => {
 
             if (node) observer.current.observe(node);
         },
-        [loading, fetchMore, hasError]
+        [loading, fetchMore, hasError, hasMore]
     );
 
     return {lastElementRef, lastElementCallBack};
